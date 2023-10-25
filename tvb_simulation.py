@@ -109,6 +109,7 @@ def RWWsimulation(G, w_p, lamda, simulation_time, process_id=None, result_queue=
         final_result = []
         final_result.append(data[:, 0, 57, 0].T.tolist())
         final_result.append(ED_sample)
+        final_result.append(r2)
         return final_result
     
 def multiprocess(param_list):
@@ -119,23 +120,40 @@ def multiprocess(param_list):
     w_p = np.ones(192)
     lamda = np.zeros(192)
     simulation_time = 10.0
+    process_num_max = 6
     
     process_num = len(param_list)
     
     start_time = t.time()
     
-    processes = []
-    for i in range(process_num):
-        p = multiprocessing.Process(target=RWWsimulation, args=(param_list[i]['G'],
-                              param_list[i]['w_p'], param_list[i]['lamda'], param_list[i]['sim_len'], i, result_queue))
-        processes.append(p)
-        p.start()
-        print(f"Started process {i}")
+    if process_num > process_num_max:
+        for j in range(0, process_num//process_num_max + 1, 1):
+            processes = []
+            for i in range(process_num_max if j != process_num//process_num_max else process_num % process_num_max):
+                p = multiprocessing.Process(target=RWWsimulation, args=(param_list[i+j*process_num_max]['G'],
+                         param_list[i+j*process_num_max]['w_p'], param_list[i+j*process_num_max]['lamda'], 
+                                        param_list[i+j*process_num_max]['sim_len'], i, result_queue))
+                processes.append(p)
+                p.start()
+                print(f"Started process {i+j*process_num_max}")
 
-    for i, p in zip(range(len(processes)), processes):
-        p.join()
-        p.close()
-        print(f"Ended process {i}")
+            for i, p in zip(range(len(processes)), processes):
+                p.join()
+                p.close()
+                print(f"Ended process {i+j*process_num_max}")
+    else:
+        processes = []
+        for i in range(process_num):
+            p = multiprocessing.Process(target=RWWsimulation, args=(param_list[i]['G'],
+                     param_list[i]['w_p'], param_list[i]['lamda'], param_list[i]['sim_len'], i, result_queue))
+            processes.append(p)
+            p.start()
+            print(f"Started process {i}")
+
+        for i, p in zip(range(len(processes)), processes):
+            p.join()
+            p.close()
+            print(f"Ended process {i}")
     
     r2_result = []
     while not result_queue.empty():
