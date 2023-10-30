@@ -9,13 +9,14 @@ import scipy.signal
 import time as t
 import multiprocessing
 from sklearn.metrics import r2_score
-
-ED_sample = [0.16782439, 0.16002025, 0.15262185, 0.14627586, 0.14235651]
+from r2_ import r2_cal
 
 def RWWsimulation(G, w_p, lamda, simulation_time, process_id=None, result_queue=None):
     try:
         default_stdout = sys.stdout
-        sys.stdout = open('log.txt', 'a')  # 将标准输出重定向到文件
+        sys.stdout = sys.stdout = open('./log/PSO_log_new.txt', 'a')  # 将标准输出重定向到文件
+
+        print('simulation begin')
 
         start_time = t.time()
 
@@ -62,55 +63,32 @@ def RWWsimulation(G, w_p, lamda, simulation_time, process_id=None, result_queue=
         eeg, _ = sim.run()
 
         time, data = eeg
-        
-#         data = data*1e4
-        sys.stdout = default_stdout
-     
-    except Exception as e:
-       print(f"写入文件出错：{str(e)}")
-    
-    try:
-       sys.stdout = open('output_data.txt', 'a')  # 将标准输出重定向到文件
-       print(data[:, 0, 57, 0].T.tolist(), process_id)
-       
-       sys.stdout = default_stdout
-    except Exception as e:
-       print(f"写入文件出错：{str(e)}")
-    
-    # 计算决定系数
-    try:
-       sys.stdout = open('log.txt', 'a')  # 将标准输出重定向到文件
-       print(ED_sample)
-       print(data[:, 0, 57, 0].T.tolist())
-       sys.stdout = default_stdout
-    except Exception as e:
-       print(f"写入文件出错：{str(e)}")
-    
-    r2 = r2_score(ED_sample, data[:, 0, 57, 0].T.tolist())
 
-    end_time = t.time()
+        r2 = r2_cal(data)
 
-    duration = end_time - start_time
+        end_time = t.time()
 
-    if process_id != None:
-        try:
-            sys.stdout = open('output.txt', 'a')  # 将标准输出重定向到文件
-            print(f"This is output from process {process_id} 代码执行时间：{duration}秒")
+        duration = end_time - start_time
+
+        print(duration)
+
+        if process_id != None:
+            pass
+        else:
+            print(f"代码执行时间：{duration}秒")
+
+        if result_queue != None:
+            result_queue.put(r2)
             sys.stdout = default_stdout
-        except Exception as e:
-            print(f"写入文件出错：{str(e)}")
-    else:
-        print(f"代码执行时间：{duration}秒")
+            return r2
+        else:
+            final_result = []
+            final_result.append(r2)
+            sys.stdout = default_stdout
+            return final_result
         
-    if result_queue != None:
-        result_queue.put(r2)
-        return r2
-    else:
-        final_result = []
-        final_result.append(data[:, 0, 57, 0].T.tolist())
-        final_result.append(ED_sample)
-        final_result.append(r2)
-        return final_result
+    except Exception as e:
+        print(f"写入文件出错：{str(e)}")
     
 def multiprocess(param_list):
     # 创建一个队列，用于存放结果
@@ -119,8 +97,8 @@ def multiprocess(param_list):
     G = np.ones(192)
     w_p = np.ones(192)
     lamda = np.zeros(192)
-    simulation_time = 10.0
-    process_num_max = 6
+    simulation_time = 1000.0
+    process_num_max = 1
     
     process_num = len(param_list)
     

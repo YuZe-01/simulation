@@ -24,23 +24,26 @@ class PSO_model:
         self.stdout = sys.stdout
         
         try:
-           sys.stdout = open('PSO_log1.txt', 'a')  # 将标准输出重定向到文件
+           sys.stdout = open('./log/PSO_log.txt', 'a')  # 将标准输出重定向到文件
 
         except Exception as e:
            print(f"写入文件出错：{str(e)}")
         
     def print_parameter(self):
-        print("w: ", self.w,
-            "c1: ", self.c1,
-            "c2: ", self.c2,
-            "r1: ", self.r1,
-            "r2: ", self.r2,
-            "N: ", self.N,
-            "D: ", self.D,
-            "M: ", self.M,
-            "x: ", self.x[:,:,0:5],
-            "pbest: ", self.pbest[:,:,0:5],
-            "gbest: ", self.gbest[0,:,0:5],
+#         print("w: ", self.w,
+#             "c1: ", self.c1,
+#             "c2: ", self.c2,
+#             "r1: ", self.r1,
+#             "r2: ", self.r2,
+#             "N: ", self.N,
+#             "D: ", self.D,
+#             "M: ", self.M,
+#             "x: ", self.x[:,:,0:5],
+#             "pbest: ", self.pbest[:,:,0:5],
+#             "gbest: ", self.gbest[0,:,0:5],
+#             "p_fit: ", self.p_fit,
+#             "fit: ", self.fit)
+        print("gbest: ", self.gbest[0,:,0:5],
             "p_fit: ", self.p_fit,
             "fit: ", self.fit)
     
@@ -54,7 +57,7 @@ class PSO_model:
                 if j != 3:
                     temp_dict[keys[j]] = x[i][j]
                 else: 
-                    temp_dict[keys[j]] = 10.0
+                    temp_dict[keys[j]] = 1000.0
             
             result.append(temp_dict)
         
@@ -72,7 +75,7 @@ class PSO_model:
                 self.pbest[i] = self.x[i] # 初始化个体的最优值
         
         raw = self.alter(self.x)
-            
+
         aim = multiprocess(raw) # 计算个体的适应度值 直接把参数空间内的所有可能性投入Multiprocessing中，多进程分批次跑完得到
                                #  参考值，r2或者MSE，
         self.p_fit = aim # 初始化个体的最优位置
@@ -84,6 +87,10 @@ class PSO_model:
         
         self.print_parameter()
         print("init_pop finish")
+        
+        sys.stdout = self.stdout # 将标准输出重定向到文件
+        print("init_pop finish")
+        sys.stdout = open('./log/PSO_log.txt', 'a')  # 将标准输出重定向到文件
         
     # 更新粒子的位置与速度
     def update(self):
@@ -107,9 +114,9 @@ class PSO_model:
             
             sys.stdout = self.stdout # 将标准输出重定向到文件
             print(f"迭代次数{t}完成")
-            sys.stdout = open('PSO_log1.txt', 'a')  # 将标准输出重定向到文件
+            sys.stdout = open('./log/PSO_log.txt', 'a')  # 将标准输出重定向到文件
                 
-        print("最优值：",self.fit,"位置为：",self.gbest[0,:,0:5])
+        print("最优值：",self.fit,"位置为：",self.gbest[0,:,:])
 
 
 if __name__ == '__main__':
