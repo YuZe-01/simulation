@@ -126,7 +126,8 @@ def multiprocess(param_list):
             for i in range(process_num_max if j != process_num//process_num_max else process_num % process_num_max):
                 np.savetxt(f'./test/test_{i}.txt', (param_list[i+j*process_num_max]['G'],
                                                     param_list[i+j*process_num_max]['w_p'],
-                                                    param_list[i+j*process_num_max]['lamda']))
+                                                    param_list[i+j*process_num_max]['lamda'],
+                                                    param_list[i+j*process_num_max]['I_o']))
                 func(i)
                 print(f"Started process {i+j*process_num_max}")
             
@@ -137,7 +138,7 @@ def multiprocess(param_list):
                     break
     else:
         for i in range(process_num):
-            np.savetxt(f'./test/test_{i}.txt', (param_list[i]['G'],param_list[i]['w_p'],param_list[i]['lamda']))
+            np.savetxt(f'./test/test_{i}.txt', (param_list[i]['G'],param_list[i]['w_p'],param_list[i]['lamda'],param_list[i]['I_o']))
             func(i)
             print(f"Started process {i}")
         

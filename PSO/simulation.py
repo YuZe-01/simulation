@@ -18,7 +18,7 @@ if __name__ == '__main__':
     data = np.loadtxt(path)
     start_time = t.time()
 
-    WWM = models.ReducedWongWangExcInh(G = data[0], w_p = data[1], lamda = data[2])
+    WWM = models.ReducedWongWangExcInh(G = data[0], w_p = data[1], lamda = data[2], I_o = data[3])
 
     white_matter = connectivity.Connectivity.from_file('connectivity_192.zip')
     white_matter.speed = np.array([4.0])
