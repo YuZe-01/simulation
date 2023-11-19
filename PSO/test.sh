@@ -5,6 +5,7 @@
 #SBATCH --cpus-per-task=1
 #SBATCH --mem-per-cpu=2G
 #SBATCH --partition=debug
+#SBATCH --output=./main.out
 
 # init environment
 cd /public/home/ynhang/yuze/TVB_Distribution/tvb_data

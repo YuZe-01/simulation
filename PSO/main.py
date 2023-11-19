@@ -31,12 +31,14 @@ def PSO_function():
     # w,c1,c2,r1,r2,N,D,M参数初始化
     w=[0.4, 2]
     c1=c2=2#一般设置为2
-    r1=0.7
-    r2=0.5
-    N=100
-    D=3
-    M=21
-    pso_object=PSO_model(w,c1,c2,r1,r2,N,D,M)#设置初始权值
+    N=150
+    D=4
+    M=40
+    tip = f"test N={N}, M={M}, psd_range=(1, 100), channel=All\n" + \
+            "add I_o to invert the post-scaling of electrode data to the scaling during fitting.\n" + \
+            "and add the limitation of velocity and parameters, referring to \\tvb\\simulator\\models\\wong_wang_exc_inh.py\n" + \
+            "also remove the r1 and r2, and set them as random value at the beginning of each iteration.\n"
+    pso_object=PSO_model(w,c1,c2,N,D,M,tip)#设置初始权值
     pso_object.init_pop()
     pso_object.update()
     
