@@ -73,11 +73,11 @@ class PSO_model:
         for i in range(self.N):
             for j in range(self.D):
                 if j != 3:
-                    self.x[i][j] = np.random.permutation(np.linspace(low = self.threshold[j][0], high = self.threshold[j][1], size=self.node_num))
-                    self.v[i][j] = np.random.permutation(np.linspace(low = -self.threshold[j][1]*self.v2p, high = self.threshold[j][1]*self.v2p, size=self.node_num))
+                    self.x[i][j] = np.random.permutation(np.linspace(self.threshold[j][0], self.threshold[j][1], self.node_num))
+                    self.v[i][j] = np.random.permutation(np.linspace(-self.threshold[j][1]*self.v2p, high = self.threshold[j][1]*self.v2p, self.node_num))
                 else:
-                    self.x[i][j] = np.random.permutation(np.linspace(low = self.threshold[j][0], high = self.threshold[j][1], size=1))
-                    self.v[i][j] = np.random.permutation(np.linspace(low = -self.threshold[j][1]*self.v2p, high = self.threshold[j][1]*self.v2p, size=1))                
+                    self.x[i][j] = np.random.permutation(np.linspace(self.threshold[j][0], self.threshold[j][1], 1))
+                    self.v[i][j] = np.random.permutation(np.linspace(-self.threshold[j][1]*self.v2p, self.threshold[j][1]*self.v2p, 1))
                 self.pbest[i] = self.x[i] # 初始化个体的最优值
         
         raw = self.alter(self.x)
