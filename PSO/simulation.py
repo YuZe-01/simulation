@@ -18,7 +18,7 @@ if __name__ == '__main__':
     data = np.loadtxt(path)
     start_time = t.time()
 
-    WWM = models.ReducedWongWangExcInh(G = data[0], w_p = data[1], lamda = data[2], I_o = data[3])
+    WWM = models.ReducedWongWangExcInh(G = data[0], w_p = data[1], lamda = data[2])
 
     white_matter = connectivity.Connectivity.from_file('connectivity_192.zip')
     white_matter.speed = np.array([4.0])
@@ -62,10 +62,13 @@ if __name__ == '__main__':
     eeg, _ = sim.run()
 
     time, data = eeg
+
+    data = data[:,0,:,0] + data[:,1,:,0]
+
     end = t.time()
     # r2 = -2.2
     r2 = r2_cal(data)
-    path = open(f'./return/{i}.txt','w')
+    path = open(f'../return/{i}.txt','w')
     path.write(str(r2))
     path.write('\n')
     path.write(str(end - start))

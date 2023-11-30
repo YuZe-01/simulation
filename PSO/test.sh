@@ -25,5 +25,5 @@ fi
 cd ../bin
 
 # run python
-cd /public/home/ynhang/yuze/code/multitask
-/public/home/ynhang/yuze/TVB_Distribution/tvb_data/bin/python /public/home/ynhang/yuze/code/multitask/main.py
+cd /public/home/ynhang/yuze/code/multitask/PSO
+/public/home/ynhang/yuze/TVB_Distribution/tvb_data/bin/python /public/home/ynhang/yuze/code/multitask/PSO/main.py

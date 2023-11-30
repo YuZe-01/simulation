@@ -29,7 +29,7 @@ class PSO_model:
         now = datetime.datetime.now()
         current_time = now.strftime("%H-%M-%S")
         
-        self.log_file_path = f'./log/log_{today}_{current_time}.txt'
+        self.log_file_path = f'../log/log_{today}_{current_time}.txt'
         psofile = open(self.log_file_path, 'w') 
         psofile.write(description) 
         psofile.close()     
@@ -71,13 +71,13 @@ class PSO_model:
         psofile = open(self.log_file_path, 'a')
         psofile.write("init_pop\n") 
         for i in range(self.N):
-            for j in range(self.D):
+            for j in range(self.D-1):
                 if j != 3:
-                    self.x[i][j] = np.random.permutation(np.linspace(self.threshold[j][0], self.threshold[j][1], self.node_num))
-                    self.v[i][j] = np.random.permutation(np.linspace(-self.threshold[j][1]*self.v2p, high = self.threshold[j][1]*self.v2p, self.node_num))
+                    self.x[i][j] = np.random.uniform(self.threshold[j][0], self.threshold[j][1], self.node_num)
+                    self.v[i][j] = np.random.uniform(-self.threshold[j][1]*self.v2p, self.threshold[j][1]*self.v2p, self.node_num)
                 else:
-                    self.x[i][j] = np.random.permutation(np.linspace(self.threshold[j][0], self.threshold[j][1], 1))
-                    self.v[i][j] = np.random.permutation(np.linspace(-self.threshold[j][1]*self.v2p, self.threshold[j][1]*self.v2p, 1))
+                    self.x[i][j] = np.random.uniform(self.threshold[j][0], self.threshold[j][1], 1)
+                    self.v[i][j] = np.random.uniform(-self.threshold[j][1]*self.v2p, self.threshold[j][1]*self.v2p, 1)                
                 self.pbest[i] = self.x[i] # 初始化个体的最优值
         
         raw = self.alter(self.x)
@@ -102,7 +102,7 @@ class PSO_model:
         now = datetime.datetime.now()
         current_time = now.strftime("%H-%M-%S")
 
-        np.savetxt(f'./data/initdata_{today}_{current_time}.txt', (self.gbest[0,0,:],self.gbest[0,1,:],self.gbest[0,2,:],self.gbest[0,3,:]))
+        np.savetxt(f'../data/initdata_{today}_{current_time}.txt', (self.gbest[0,0,:],self.gbest[0,1,:],self.gbest[0,2,:],self.gbest[0,3,:]))
 
     # 更新粒子的位置与速度
     def update(self):
@@ -115,12 +115,12 @@ class PSO_model:
             for i in range(self.N): # 更新粒子的速度和位置
                 weight = self.w[1] - (self.w[1] - self.w[0])*(t/self.M)
                 self.v[i]=weight*self.v[i]+self.c1*r1*(self.pbest[i]-self.x[i])+ self.c2*r2*(self.gbest-self.x[i])
-                for j in range(self.D):
+                for j in range(self.D-1):
                     self.v[i][j]=[-self.threshold[j][1]*self.v2p if x <= -self.threshold[j][1]*self.v2p 
                                else self.threshold[j][1]*self.v2p if x >= self.threshold[j][1]*self.v2p else x for x in self.v[i][j]]
                 
                 self.x[i]=self.x[i]+self.v[i]
-                for j in range(self.D):
+                for j in range(self.D-1):
                     self.x[i][j]=[self.threshold[j][0] if x <= self.threshold[j][0]
                                else self.threshold[j][1] if x >= self.threshold[j][1] else x for x in self.x[i][j]]
             
@@ -151,7 +151,7 @@ class PSO_model:
         now = datetime.datetime.now()
         current_time = now.strftime("%H-%M-%S")
 
-        np.savetxt(f'./data/finaldata_{today}_{current_time}.txt', (self.gbest[0,0,:],self.gbest[0,1,:],self.gbest[0,2,:],self.gbest[0,3,:]))
+        np.savetxt(f'../data/finaldata_{today}_{current_time}.txt', (self.gbest[0,0,:],self.gbest[0,1,:],self.gbest[0,2,:],self.gbest[0,3,:]))
 
 if __name__ == '__main__':
     # w,c1,c2,r1,r2,N,D,M参数初始化

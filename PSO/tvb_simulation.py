@@ -106,15 +106,15 @@ def func(i):
     path.write("#SBATCH --job-name=lyz_subprocess\n")
     path.write("#SBATCH --ntasks=1\n")
     path.write("#SBATCH --cpus-per-task=1\n")
-    path.write(f"#SBATCH --output=./slurm/out_{i}.out\n")
+    path.write(f"#SBATCH --output=../slurm/out_{i}.out\n")
 
     python_path = "\n/public/home/ynhang/yuze/TVB_Distribution/tvb_data/bin/python"
-    script_path = " /public/home/ynhang/yuze/code/multitask/simulation.py"
-    order = python_path + script_path + f" ./test/test_{i}.txt" + f' {i}'
+    script_path = " /public/home/ynhang/yuze/code/multitask/PSO/simulation.py"
+    order = python_path + script_path + f" ../test/test_{i}.txt" + f' {i}'
     path.write(order)
     path.close()
 
-    subprocess.run(f"sbatch ./bash/{i}.sh", shell=True)    
+    subprocess.run(f"sbatch ../bash/{i}.sh", shell=True)    
 
 def multiprocess(param_list):
     process_num_max = 200
@@ -124,7 +124,7 @@ def multiprocess(param_list):
     if process_num > process_num_max:
         for j in range(0, process_num//process_num_max + 1, 1):
             for i in range(process_num_max if j != process_num//process_num_max else process_num % process_num_max):
-                np.savetxt(f'./test/test_{i}.txt', (param_list[i+j*process_num_max]['G'],
+                np.savetxt(f'../test/test_{i}.txt', (param_list[i+j*process_num_max]['G'],
                                                     param_list[i+j*process_num_max]['w_p'],
                                                     param_list[i+j*process_num_max]['lamda'],
                                                     param_list[i+j*process_num_max]['I_o']))
@@ -138,7 +138,7 @@ def multiprocess(param_list):
                     break
     else:
         for i in range(process_num):
-            np.savetxt(f'./test/test_{i}.txt', (param_list[i]['G'],param_list[i]['w_p'],param_list[i]['lamda'],param_list[i]['I_o']))
+            np.savetxt(f'../test/test_{i}.txt', (param_list[i]['G'],param_list[i]['w_p'],param_list[i]['lamda'],param_list[i]['I_o']))
             func(i)
             print(f"Started process {i}")
         
@@ -150,7 +150,7 @@ def multiprocess(param_list):
                 break               
     
     for i in range(process_num):
-        path = open(f'./return/{i}.txt', 'r')
+        path = open(f'../return/{i}.txt', 'r')
         r2_result.append(float(path.readline()))
     
     return r2_result

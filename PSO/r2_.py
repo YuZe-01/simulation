@@ -11,7 +11,7 @@ def process(data):
     ch_names = []
     for i in range(len(same_index)):
         ch_types.append('eeg')
-        data_.append(data[:, 0, same_index[i], 0])
+        data_.append(data[:, same_index[i]])
         ch_names.append('Fpz')
 #         ch_names.append(ch_list[same_index[i]])
 
@@ -22,8 +22,8 @@ def process(data):
     raw = mne.io.RawArray(data_, info)
 
     # 0.1Hz~100Hz高低通滤波，以及50Hz陷波滤波
-    raw_hlfilter = raw.filter(l_freq=0.1, h_freq=100,method='fir')
-    raw_hltfilter = raw_hlfilter.notch_filter(freqs=50)
+    # raw_hlfilter = raw.filter(l_freq=0.1, h_freq=100,method='fir')
+    # raw_hltfilter = raw_hlfilter.notch_filter(freqs=50)
 
     # 选取平均值为参考通道
     raw_ref = raw_hltfilter.set_eeg_reference(ref_channels = 'average')
@@ -31,10 +31,17 @@ def process(data):
     # 设定时间和通道
     time_start = 0.
     time_end = 1.
-    picks = mne.pick_types(raw_ref.info, eeg=True, exclude='bads')
-    t_idx = raw_ref.time_as_index([time_start, time_end])
+    picks = mne.pick_types(raw.info, eeg=True, exclude='bads')
+    t_idx = raw.time_as_index([time_start, time_end])
 
-    datas, times = raw_ref[picks, t_idx[0]:t_idx[1]]
+    datas, times = raw[picks, t_idx[0]:t_idx[1]]
+
+    # 计算平均值和标准差
+    mean_x = np.mean(datas)
+    std_x = np.std(datas)
+
+    # 标准化数据
+    datas = (datas - mean_x) / std_x
 
     (f, S) = scipy.signal.welch(datas, 500, nperseg=500)
 
@@ -44,7 +51,7 @@ def true_data():
     same_index_raw = [21, 33, 5, 1, 8, 19, 10, 47, 0, 42, 14, 26, 6, 22, 34, 50, 28, 46, 48, 58, 39, 9, 15, 20, 27, 41, 56, 17, 35, 38, 4, 16, 32, 3, 45, 18, 37, 54, 55, 36, 31, 7, 29, 25, 44, 11, 30, 13, 51, 43, 12, 2, 57, 40, 49]
 
     # 指定CNT文件路径
-    cnt_file = '/public/home/ynhang/yuze/code/multitask/data/eyeclosed.fif'
+    cnt_file = '/public/home/ynhang/yuze/code/multitask/dataset/eyeclosed.fif'
 
     # 使用mne加载CNT文件
     raw = mne.io.read_raw_fif(cnt_file, preload=True)
@@ -83,9 +90,16 @@ def true_data():
     picks = mne.pick_types(raw_ref.info, eeg=True, exclude='bads')
     t_idx = raw_ref.time_as_index([time_start, time_end])
     data, times = raw_ref[picks, t_idx[0]:t_idx[1]]
+
+    # 计算平均值和标准差
+    mean_x = np.mean(data*1e6)
+    std_x = np.std(data*1e6)
+
+    # 标准化数据
+    data = (data*1e6 - mean_x) / std_x
     # f contains the frequency components
     # S is the PSD
-    (f, S1)= scipy.signal.welch(data*1e6, 500, nperseg=500)
+    (f, S1)= scipy.signal.welch(data, 500, nperseg=500)
     
     s = []
     for i in range(len(same_index_raw)):
@@ -99,16 +113,16 @@ def r2_cal(data):
     temp = open("r2.txt", "w")
     temp.write("r2_score begin\n")
     data_true = true_data()
-    
+
     data_pro = process(data)
-    
-    r2 = r2_score(data_true[:,1:100], (data_pro[:,1:100]))
+ 
+    r2 = r2_score(data_true.T[:,1:100], (data_pro.T[:,1:100]))
     
     sum = 0
-    for i in range(len(data_true)):
-        t = r2_score((data_true[i,1:100]), (data_pro[i, 1:100]))
+    for i in range(0, 50, 1):
+        t = r2_score((data_true.T[i,1:100]), (data_pro.T[i, 1:100]))
         sum = sum + t
-        temp.write(f"{i}channl: {t}\n")
+        temp.write(f"{i}channel: {t}\n")
 
     sum1 = sum / len(data_true)
     temp.write(f"sum: {sum1}, sum/{len(data_true)}: {sum} r2: {r2}\n")
