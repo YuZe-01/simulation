@@ -1,10 +1,11 @@
 import numpy as np
-from tvb_simulation import multiprocess
+from multi_task import multiprocess
 import random
 import sys
 import datetime
 from r2_ import true_data
 import time
+import subprocess
 
 class PSO_model:
     def __init__(self,w,c1,c2,N,D,M,description):
@@ -32,8 +33,10 @@ class PSO_model:
         self.log_file_path = f'../log/log_{today}_{current_time}.txt'
         psofile = open(self.log_file_path, 'w') 
         psofile.write(description) 
-        psofile.close()     
- 
+        psofile.close()
+        
+        subprocess.run(f"rm -r r2", shell=True)     
+     
     def print_parameter(self, file):
 #         print("w: ", self.w,
 #             "c1: ", self.c1,
@@ -48,22 +51,24 @@ class PSO_model:
 #             "gbest: ", self.gbest[0,:,0:5],
 #             "p_fit: ", self.p_fit,
 #             "fit: ", self.fit)
-        file.write(f"v:{self.v[0,:,0:5]}\n")
-        file.write(f"x: {self.x[0,:,0:5]}\n")
+        file.write(f"v:{self.v[0:3,:,0:5]}\n")
+        file.write(f"x: {self.x[0:3,:,0:5]}\n")
         file.write(f"gbest: {self.gbest[0,:,0:5]}\n")
         # file.write(f"p_fit: {self.p_fit}\n")
         file.write(f"fit: {self.fit}\n")
     
     def alter(self, x):
         result = []
-        keys = ['G', 'w_p', 'lamda', 'I_o']
-        temp_dict = dict.fromkeys(keys)
+        keys = ['G', 'w_p', 'lamda','I_o']
         for i in range(self.N):
+            temp_dict = dict.fromkeys(keys)
             for j in range(len(keys)):
-                temp_dict[keys[j]] = x[i][j]
+                temp_dict[keys[j]] = x[i][j][0:5]
             
             result.append(temp_dict)
         
+        #psofile = open(self.log_file_path, 'a')
+        #psofile.write(f"result: {result[0:2]}") 
         return result
 
      # 初始化种群
@@ -71,29 +76,38 @@ class PSO_model:
         psofile = open(self.log_file_path, 'a')
         psofile.write("init_pop\n") 
         for i in range(self.N):
-            for j in range(self.D-1):
+            for j in range(self.D):
                 if j != 3:
                     self.x[i][j] = np.random.uniform(self.threshold[j][0], self.threshold[j][1], self.node_num)
                     self.v[i][j] = np.random.uniform(-self.threshold[j][1]*self.v2p, self.threshold[j][1]*self.v2p, self.node_num)
                 else:
                     self.x[i][j] = np.random.uniform(self.threshold[j][0], self.threshold[j][1], 1)
-                    self.v[i][j] = np.random.uniform(-self.threshold[j][1]*self.v2p, self.threshold[j][1]*self.v2p, 1)                
+                    self.v[i][j] = np.random.uniform(-self.threshold[j][1]*self.v2p, self.threshold[j][1]*self.v2p, 1)
+                # if j != 3:
+                  #  self.x[i][j] = np.random.uniform(self.threshold[j][0], self.threshold[j][1], self.node_num)
+                  #  self.v[i][j] = np.random.uniform(-self.threshold[j][1]*self.v2p, self.threshold[j][1]*self.v2p, self.node_num)
                 self.pbest[i] = self.x[i] # 初始化个体的最优值
         
         raw = self.alter(self.x)
         start = time.time()
+        # aim = np.zeros(self.N)
         aim = multiprocess(raw) # 计算个体的适应度值 直接把参数空间内的所有可能性投入Multiprocessing中，多进程分批次跑完得到
                                #  参考值，r2或者MSE，
         end = time.time()
         self.p_fit = aim # 初始化个体的最优位置
         duration = end - start
         psofile.write(f"单参数优化总执行时间：{duration}秒\n")
-        # psofile.write(f"PSO: {aim}\n") 
+        # psofile.write(f"PSO: {aim}\n")
+ 
+        best_id = -1
+
         for i in range(len(self.p_fit)):
             if self.p_fit[i] > self.fit:  # 对个体适应度进行比较，计算出最优的种群适应度
+                best_id = i
                 self.fit = self.p_fit[i]
                 self.gbest[0] = self.x[i]    
         
+        psofile.write(f"best fitting particle_id: {best_id}\n")
         self.print_parameter(psofile)
         psofile.write("init_pop finish\n")
         psofile.close()
@@ -115,12 +129,12 @@ class PSO_model:
             for i in range(self.N): # 更新粒子的速度和位置
                 weight = self.w[1] - (self.w[1] - self.w[0])*(t/self.M)
                 self.v[i]=weight*self.v[i]+self.c1*r1*(self.pbest[i]-self.x[i])+ self.c2*r2*(self.gbest-self.x[i])
-                for j in range(self.D-1):
+                for j in range(self.D):
                     self.v[i][j]=[-self.threshold[j][1]*self.v2p if x <= -self.threshold[j][1]*self.v2p 
                                else self.threshold[j][1]*self.v2p if x >= self.threshold[j][1]*self.v2p else x for x in self.v[i][j]]
                 
                 self.x[i]=self.x[i]+self.v[i]
-                for j in range(self.D-1):
+                for j in range(self.D):
                     self.x[i][j]=[self.threshold[j][0] if x <= self.threshold[j][0]
                                else self.threshold[j][1] if x >= self.threshold[j][1] else x for x in self.x[i][j]]
             
@@ -132,19 +146,23 @@ class PSO_model:
             psofile.write(f"单参数优化总执行时间：{duration}秒\n")
             # psofile.write(f"PSO: {aim}\n")
 
+            best_id = -1
+
             for i in range(len(aim)):
-                if aim[i] >= self.p_fit[i]: # 比较适应度大小，将大的赋值给个体最优
+                if aim[i] > self.p_fit[i]: # 比较适应度大小，将大的赋值给个体最优
                     self.p_fit[i]=aim[i]
                     self.pbest[i]=self.x[i]
-                    if self.p_fit[i] >= self.fit: # 如果是个体最优再将和全体最优进行对比
+                    if self.p_fit[i] > self.fit: # 如果是个体最优再将和全体最优进行对比
+                        best_id = i
                         self.gbest[0]=self.x[i]
                         self.fit = self.p_fit[i]
-    
+            
+            psofile.write(f"best fitting particle_id: {best_id}\n")
             self.print_parameter(psofile)
             psofile.write(f"第{t+1}次迭代完成\n")
             
         psofile.write(f"最优值：{self.fit}\n")
-        psofile.write(f"位置为：{self.gbest[0,:,:]}\n")
+        psofile.write(f"位置为：{self.gbest[0,:,0:25]}\n")
         psofile.close()
 
         today = datetime.date.today()

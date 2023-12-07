@@ -1,4 +1,3 @@
-import tvb_simulation
 import numpy as np
 import multiprocessing
 import time as t
@@ -31,9 +30,9 @@ def PSO_function():
     # w,c1,c2,r1,r2,N,D,M参数初始化
     w=[0.4, 2]
     c1=c2=2#一般设置为2
-    N=200
+    N=3
     D=4
-    M=20
+    M=1
     tip = f"N={N}, M={M}, psd_range=(1, 100), channel=All\n" + \
             "add I_o to invert the post-scaling of electrode data to the scaling during fitting.\n" + \
             "and add the limitation of velocity and parameters, referring to \\tvb\\simulator\\models\\wong_wang_exc_inh.py\n" + \
@@ -42,7 +41,8 @@ def PSO_function():
             "add normalization to empirical data and simulation data before execute r2_score.\n" + \
             "and add the output of both S_e and S_i.\n" + \
             "cancel permutation of x and v to test whether the value of v still are the limitation.\n" + \
-            "cancel the filter operation of simulation data.\n"
+            "cancel the filter and reference operation of simulation data.\n" + \
+            "change r2_.py to r2.py to check the cause of abnormal difference of result between r2_.py and r2.py.\n"
     pso_object=PSO_model(w,c1,c2,N,D,M,tip)#设置初始权值
     pso_object.init_pop()
     pso_object.update()
