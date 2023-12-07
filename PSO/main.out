@@ -1,27 +1,4 @@
 rm: cannot remove ‘r2’: No such file or directory
-Submitted batch job 111890
-Submitted batch job 111891
-Submitted batch job 111892
-Submitted batch job 111893
-Submitted batch job 111894
-Submitted batch job 111895
-begin
-func
-
-Started process 0
-func
-
-Started process 1
-func
-
-Started process 2
-func
-
-Started process 0
-func
-
-Started process 1
-func
-
-Started process 2
-finish
+Submitted batch job 111898
+Submitted batch job 111899
+Submitted batch job 111900

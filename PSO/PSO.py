@@ -63,12 +63,10 @@ class PSO_model:
         for i in range(self.N):
             temp_dict = dict.fromkeys(keys)
             for j in range(len(keys)):
-                temp_dict[keys[j]] = x[i][j][0:5]
+                temp_dict[keys[j]] = x[i][j]
             
             result.append(temp_dict)
         
-        #psofile = open(self.log_file_path, 'a')
-        #psofile.write(f"result: {result[0:2]}") 
         return result
 
      # 初始化种群
